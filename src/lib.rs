@@ -34,9 +34,9 @@ async fn handler(tele: Telegram, placeholder_text: &str, help_mesg: &str, update
             _ = tele.send_message(chat_id, help_mesg);
 
         } else if text.eq_ignore_ascii_case("/top") {
-            let placeholder = tele
-                .send_message(chat_id, placeholder_text)
-                .expect("Error occurs when sending Message to Telegram");
+            // let placeholder = tele
+            //     .send_message(chat_id, placeholder_text)
+            //     .expect("Error occurs when sending Message to Telegram");
 
             let fetch_uri: Uri = Uri::try_from("https://gamefidash.com/api/v2/projects?page=1&page_size=10&date_range=24h&sort_dim=volume").unwrap();
             let mut bytes = Vec::new();
@@ -75,27 +75,28 @@ async fn handler(tele: Telegram, placeholder_text: &str, help_mesg: &str, update
             _ = tele.edit_message_text(chat_id, placeholder.id, &resp_str);
             */
             
-            let mut resp_str = String::new();
             let c: Value = serde_json::from_str(&json_str).unwrap();
             let data_arr = c["data"]["data"].as_array().unwrap();
             for d in data_arr {
-                resp_str.push_str("Name: ");
+                let mut resp_str = String::new();
+                resp_str.push_str("*Name:* ");
                 resp_str.push_str(d["name"].as_str().unwrap());
                 resp_str.push_str("\n");
-                resp_str.push_str("Address: ");
+                resp_str.push_str("*Address:* ");
                 resp_str.push_str(d["main_token_address"].as_str().unwrap());
                 resp_str.push_str("\n");
 
                 let token_arr = d["tokens"].as_array().unwrap();
                 for t in token_arr {
                     if let Some(p) = t["price"].as_f64() {
-                        resp_str.push_str("Price: ");
+                        resp_str.push_str("*Price:* ");
                         resp_str.push_str(&p.to_string());
                         resp_str.push_str("\n");
+                        break;
                     }
                 }
+                _ = tele.send_message(chat_id, &resp_str);
             }
-            _ = tele.edit_message_text(chat_id, placeholder.id, &resp_str);
 
         } else {
             // Do nothing
