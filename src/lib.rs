@@ -43,13 +43,16 @@ async fn handler(tele: Telegram, placeholder_text: &str, help_mesg: &str, update
                 .method(Method::GET)
                 .send(&mut bytes).unwrap();
             let json_str = String::from_utf8(bytes).unwrap();
+            log::info!("Received from web service : {}", json_str);
             
             let mut resp_str = String::new();
             let c: Collection = serde_json::from_str(&json_str).unwrap();
+            log::info!("Parsed JSON!");
             // data.data[0].name
             // data.data[0].main_token_address
             // data.data[0].tokens[0].price
             for d in &c.data.data {
+                log::info!("Construct the resp : {}", resp_str);
                 resp_str.push_str("Name: ");
                 resp_str.push_str(&d.name);
                 resp_str.push_str("\n");
