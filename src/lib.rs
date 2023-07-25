@@ -1,11 +1,12 @@
-use serde::{Deserialize, Serialize};
+// use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use tg_flows::{listen_to_update, Telegram, Update, UpdateKind};
 use flowsnet_platform_sdk::logger;
 use http_req::{
     request::{Method, Request},
     uri::Uri,
 };
-use std::collections::HashMap;
+// use std::collections::HashMap;
 
 #[no_mangle]
 #[tokio::main(flavor = "current_thread")]
@@ -44,13 +45,15 @@ async fn handler(tele: Telegram, placeholder_text: &str, help_mesg: &str, update
                 .send(&mut bytes).unwrap();
             let json_str = String::from_utf8(bytes).unwrap();
             log::info!("Received from web service : {}", json_str);
-            
-            let mut resp_str = String::new();
-            let c: Collection = serde_json::from_str(&json_str).unwrap();
-            log::info!("Parsed JSON!");
+
             // data.data[0].name
             // data.data[0].main_token_address
             // data.data[0].tokens[0].price
+
+            /*
+            let mut resp_str = String::new();
+            let c: Collection = serde_json::from_str(&json_str).unwrap();
+            log::info!("Parsed JSON!");
             for d in &c.data.data {
                 log::info!("Construct the resp : {}", resp_str);
                 resp_str.push_str("Name: ");
@@ -70,19 +73,29 @@ async fn handler(tele: Telegram, placeholder_text: &str, help_mesg: &str, update
                 }
             }
             _ = tele.edit_message_text(chat_id, placeholder.id, &resp_str);
+            */
             
-            /*
-            let json: Value = serde_json::from_str(data).unwrap();
-            let data_arr = json["data"]["data"].as_array().unwrap();
-            for d in &data_arr {
-                d["name"];
-                d["main_token_address"];
+            let mut resp_str = String::new();
+            let c: Value = serde_json::from_str(&json_str).unwrap();
+            let data_arr = c["data"]["data"].as_array().unwrap();
+            for d in data_arr {
+                resp_str.push_str("Name: ");
+                resp_str.push_str(d["name"].as_str().unwrap());
+                resp_str.push_str("\n");
+                resp_str.push_str("Address: ");
+                resp_str.push_str(d["main_token_address"].as_str().unwrap());
+                resp_str.push_str("\n");
+
                 let token_arr = d["tokens"].as_array().unwrap();
-                for t in &token_arr {
-                    t["price"];
+                for t in token_arr {
+                    if let Some(p) = t["price"].as_f64() {
+                        resp_str.push_str("Price: ");
+                        resp_str.push_str(&p.to_string());
+                        resp_str.push_str("\n");
+                    }
                 }
             }
-            */
+            _ = tele.edit_message_text(chat_id, placeholder.id, &resp_str);
 
         } else {
             // Do nothing
@@ -93,6 +106,7 @@ async fn handler(tele: Telegram, placeholder_text: &str, help_mesg: &str, update
     }
 }
 
+/*
 #[derive(Serialize, Deserialize)]
 pub struct Collection {
     #[serde(rename = "code")]
@@ -562,4 +576,4 @@ pub enum Chain {
     #[serde(rename = "Solana")]
     Solana,
 }
-
+*/
