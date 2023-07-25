@@ -51,17 +51,17 @@ async fn handler(tele: Telegram, _placeholder_text: &str, help_mesg: &str, updat
             let data_arr = c["data"]["data"].as_array().unwrap();
             for d in data_arr {
                 let mut resp_str = String::new();
-                resp_str.push_str("**Name:** ");
+                resp_str.push_str("Name: ");
                 resp_str.push_str(d["name"].as_str().unwrap());
                 resp_str.push_str("\n");
-                resp_str.push_str("**Address:** ");
+                resp_str.push_str("Address: ");
                 resp_str.push_str(d["main_token_address"].as_str().unwrap());
                 resp_str.push_str("\n");
 
                 let token_arr = d["tokens"].as_array().unwrap();
                 for t in token_arr {
                     if let Some(p) = t["price"].as_f64() {
-                        resp_str.push_str("**Price:** ");
+                        resp_str.push_str("Price: ");
                         resp_str.push_str(&p.to_string());
                         resp_str.push_str("\n");
                         break;
