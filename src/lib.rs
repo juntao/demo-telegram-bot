@@ -52,14 +52,17 @@ async fn handler(tele: Telegram, api_key: &str, placeholder_text: &str, help_mes
                 None => "midjourney-v4".to_owned(),
             };
             
-            let prompts: Vec<&str> = text.split_whitespace().collect();
+            let prompts: Vec<&str> = text.split(",").collect();
             let mut positive_prompt = String::new();
             let mut negative_prompt = String::new();
             for p in prompts {
-                if p.starts_with("-") {
-                    negative_prompt.push_str(p.strip_prefix("-").unwrap_or(""));
+                let cp = p.trim();
+                if cp.starts_with("-") {
+                    negative_prompt.push_str(cp.strip_prefix("-").unwrap_or(""));
+                    negative_prompt.push_str(", ");
                 } else {
-                    positive_prompt.push_str(p);
+                    positive_prompt.push_str(cp);
+                    positive_prompt.push_str(", ");
                 }
             }
 
