@@ -87,10 +87,10 @@ async fn handler(tele: Telegram, api_key: &str, placeholder_text: &str, help_mes
             log::info!("fetch request : {}", fetch_url);
             let fetch_uri: Uri = Uri::try_from(fetch_url.as_str()).unwrap();
             
-            // Wait for a max of 120s
-            for _ in 0..11 {
-                // Wait for 10 sec
-                sleep(Duration::from_millis(10000)).await;
+            // Wait for a max of 300s
+            for _ in 0..14 {
+                // Wait for 20 sec
+                sleep(Duration::from_millis(20000)).await;
                 
                 let mut bytes = Vec::new();
                 Request::new(&fetch_uri)
