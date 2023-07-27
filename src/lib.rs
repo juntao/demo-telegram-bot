@@ -76,7 +76,7 @@ async fn handler(tele: Telegram, api_key: &str, placeholder_text: &str, help_mes
                 .header("Accept", "*/*")
                 .header("Content-Type", "application/json")
                 .header("Content-Length", &json_request.as_bytes().len())
-                .body(json_request.as_bytes());
+                .body(json_request.as_bytes())
                 .send(&mut bytes).unwrap();
             let json_response = String::from_utf8(bytes).unwrap();
             log::info!("Received from api service : {}", json_response);
