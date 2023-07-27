@@ -17,7 +17,7 @@ pub async fn run() -> anyhow::Result<()> {
     let telegram_token = std::env::var("telegram_token").unwrap();
     let api_key = std::env::var("miaoshouai_key").unwrap();
     let placeholder_text = std::env::var("placeholder").unwrap_or("Generating your image ... This could take a minute!".to_string());
-    let help_mesg = std::env::var("help_mesg").unwrap_or("Select a model. Available choices are:\n/redshift_diffusion\n/samdoesarts_ultmerge\n/midjourney_v4\n/inkpunk\n/synthwave_diffusion\n/analog_diffusion\n/dreamlike_diffusion_\n/gta5_artwork_diffusi\n/elldreths_vi\n/dreamlike\n/dream_shaper_8797\n/counterfeit_v20\n/deliberate\n/pixel_sprite\n/all_in_one_pixel_mod\n/midjourney_papercut\n/graffitymidjourney\n/woolitize_diffusion\n/midjourney_v4_painta\n/exposure_diffusion\n/firewatch_diffusion\n/portraitplus_diffusion\n/vintedois_diffusion\n/pixel_art_v3\n/pastel_mix\n/t_shirt_prin\n/disco_diffusion\n/protogen_infinity_of\n/anything_v5\n/icons_diffusion\n/stable_diffu_5089\n/lowpoly_diffusion".to_string());
+    let help_mesg = std::env::var("help_mesg").unwrap_or("Select a model:\n/redshift_diffusion\n/samdoesarts_ultmerge\n/midjourney_v4\n/inkpunk\n/synthwave_diffusion\n/analog_diffusion\n/dreamlike_diffusion_\n/gta5_artwork_diffusi\n/elldreths_vi\n/dreamlike\n/dream_shaper_8797\n/counterfeit_v20\n/deliberate\n/pixel_sprite\n/all_in_one_pixel_mod\n/midjourney_papercut\n/graffitymidjourney\n/woolitize_diffusion\n/midjourney_v4_painta\n/exposure_diffusion\n/firewatch_diffusion\n/portraitplus_diffusion\n/vintedois_diffusion\n/pixel_art_v3\n/pastel_mix\n/t_shirt_prin\n/disco_diffusion\n/protogen_infinity_of\n/anything_v5\n/icons_diffusion\n/stable_diffu_5089\n/lowpoly_diffusion".to_string());
 
     listen_to_update(&telegram_token, |update| {
         let tele = Telegram::new(telegram_token.to_string());
@@ -106,11 +106,18 @@ async fn handler(tele: Telegram, api_key: &str, placeholder_text: &str, help_mes
                 };
                 if !pic_url.is_empty() {
                     log::info!("pic request : {}", pic_url);
-                    _ = tele.send_photo(chat_id, InputFile::url(Url::parse(pic_url).unwrap()));
-                    _ = tele.edit_message_text(chat_id, placeholder.id, "See the generated image below");
-                    break;
+                    if pic_url.starts_with("https") {
+                        _ = tele.send_photo(chat_id, InputFile::url(Url::parse(pic_url).unwrap()));
+                        _ = tele.edit_message_text(chat_id, placeholder.id, "See the generated image below");
+                        return;
+                    } else {
+                        _ = tele.edit_message_text(chat_id, placeholder.id, &format!("Error: {}", pic_url));
+                        return;
+                    }
                 }
             }
+            // The pic_url did not get ready after 300s
+            _ = tele.edit_message_text(chat_id, placeholder.id, "Time out. The server was not able to generate the requested image.");
         }
         return;
     }
