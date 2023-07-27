@@ -120,18 +120,30 @@ async fn handler(tele: Telegram, api_key: &str, placeholder_text: &str, help_mes
             let mut bytes = Vec::new();
             Request::new(&api_uri)
                 .method(Method::POST)
+                .header("Content-Type", "application/json")
                 .body(json_request.as_bytes())
                 .send(&mut bytes).unwrap();
             let json_response = String::from_utf8(bytes).unwrap();
-            log::info!("Received from web service : {}", json_response);
+            log::info!("Received from api service : {}", json_response);
 
-            // wait for 15 sec!
+            // wait for 20 sec just to be safe!
             sleep(Duration::from_millis(20000)).await;
             
             let c: Value = serde_json::from_str(&json_response).unwrap();
             let fetch_key = c["data"]["fetchKey"].as_str().unwrap();
-            let fetch_url = Url::parse(&format!("https://miaoshouai.com/playground/translation/produce/get/fetchResult?fetchKey={}", fetch_key)).unwrap();
-            _ = tele.send_photo(chat_id, InputFile::url(fetch_url));
+            let fetch_url = format!("https://miaoshouai.com/playground/translation/produce/get/fetchResult?fetchKey={}", fetch_key);
+            let fetch_uri: Uri = Uri::try_from(fetch_url.as_str()).unwrap();
+            let mut bytes = Vec::new();
+            Request::new(&fetch_uri)
+                .method(Method::GET)
+                .send(&mut bytes).unwrap();
+            let json_response = String::from_utf8(bytes).unwrap();
+            log::info!("Received from fetch service : {}", json_response);
+
+
+            let c: Value = serde_json::from_str(&json_response).unwrap();
+            let pic_url = c["data"]["picUrl"].as_str().unwrap();
+            _ = tele.send_photo(chat_id, InputFile::url(Url::parse(pic_url).unwrap()));
             _ = tele.edit_message_text(chat_id, placeholder.id, "");
         }
 
