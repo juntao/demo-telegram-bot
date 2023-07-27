@@ -158,7 +158,7 @@ async fn handler(tele: Telegram, api_key: &str, placeholder_text: &str, help_mes
                 let pic_url = match c["data"]["picUrl"].as_str() {
                     Some(v) => v,
                     None => "",
-                }
+                };
                 if !pic_url.is_empty() {
                     log::info!("pic request : {}", pic_url);
                     _ = tele.send_photo(chat_id, InputFile::url(Url::parse(pic_url).unwrap()));
