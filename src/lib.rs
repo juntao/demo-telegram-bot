@@ -17,7 +17,7 @@ pub async fn run() -> anyhow::Result<()> {
     let telegram_token = std::env::var("telegram_token").unwrap();
     let api_key = std::env::var("miaoshouai_key").unwrap();
     let placeholder_text = std::env::var("placeholder").unwrap_or("Generating your image ...".to_string());
-    let help_mesg = std::env::var("help_mesg").unwrap_or("Type command `/model_id` to select a model. Available choices are: /redshift-diffusion /samdoesarts-ultmerge /midjourney-v4 /inkpunk /counterfeit-v20".to_string());
+    let help_mesg = std::env::var("help_mesg").unwrap_or("Select a model. Available choices are:\n/redshift_diffusion\n/samdoesarts_ultmerge\n/midjourney_v4\n/inkpunk\n/counterfeit-v20".to_string());
 
     listen_to_update(&telegram_token, |update| {
         let tele = Telegram::new(telegram_token.to_string());
@@ -36,58 +36,58 @@ async fn handler(tele: Telegram, api_key: &str, placeholder_text: &str, help_mes
         if text.eq_ignore_ascii_case("/help") || text.eq_ignore_ascii_case("/start") {
             _ = tele.send_message(chat_id, help_mesg);
 
-        } else if text.eq_ignore_ascii_case("/redshift-diffusion") {
-            let model_id = text.strip_prefix("/").unwrap();
+        } else if text.eq_ignore_ascii_case("/redshift_diffusion") {
+            let model_id = "redshift-diffusion";
             set("model_id", json!(model_id), None);
             _ = tele.send_message(chat_id, &format!("The model has been set to {}", model_id));
 
-        } else if text.eq_ignore_ascii_case("/samdoesarts-ultmerge") {
-            let model_id = text.strip_prefix("/").unwrap();
+        } else if text.eq_ignore_ascii_case("/samdoesarts_ultmerge") {
+            let model_id = "samdoesarts-ultmerge";
             set("model_id", json!(model_id), None);
             _ = tele.send_message(chat_id, &format!("The model has been set to {}", model_id));
 
-        } else if text.eq_ignore_ascii_case("/midjourney-v4") {
-            let model_id = text.strip_prefix("/").unwrap();
+        } else if text.eq_ignore_ascii_case("/midjourney_v4") {
+            let model_id = "midjourney-v4";
             set("model_id", json!(model_id), None);
             _ = tele.send_message(chat_id, &format!("The model has been set to {}", model_id));
 
         } else if text.eq_ignore_ascii_case("/inkpunk") {
-            let model_id = text.strip_prefix("/").unwrap();
+            let model_id = "inkpunk";
             set("model_id", json!(model_id), None);
             _ = tele.send_message(chat_id, &format!("The model has been set to {}", model_id));
 
-        } else if text.eq_ignore_ascii_case("/synthwave-diffusion") {
-            let model_id = text.strip_prefix("/").unwrap();
+        } else if text.eq_ignore_ascii_case("/synthwave_diffusion") {
+            let model_id = "synthwave-diffusion";
             set("model_id", json!(model_id), None);
             _ = tele.send_message(chat_id, &format!("The model has been set to {}", model_id));
 
-        } else if text.eq_ignore_ascii_case("/analog-diffusion") {
-            let model_id = text.strip_prefix("/").unwrap();
+        } else if text.eq_ignore_ascii_case("/analog_diffusion") {
+            let model_id = "analog-diffusion";
             set("model_id", json!(model_id), None);
             _ = tele.send_message(chat_id, &format!("The model has been set to {}", model_id));
 
-        } else if text.eq_ignore_ascii_case("/elldreths-vi") {
-            let model_id = text.strip_prefix("/").unwrap();
+        } else if text.eq_ignore_ascii_case("/elldreths_vi") {
+            let model_id = "elldreths-vi";
             set("model_id", json!(model_id), None);
             _ = tele.send_message(chat_id, &format!("The model has been set to {}", model_id));
 
         } else if text.eq_ignore_ascii_case("/dreamlike") {
-            let model_id = text.strip_prefix("/").unwrap();
+            let model_id = "dreamlike";
             set("model_id", json!(model_id), None);
             _ = tele.send_message(chat_id, &format!("The model has been set to {}", model_id));
 
-        } else if text.eq_ignore_ascii_case("/dream-shaper-8797") {
-            let model_id = text.strip_prefix("/").unwrap();
+        } else if text.eq_ignore_ascii_case("/dream_shaper_8797") {
+            let model_id = "dream-shaper-8797";
             set("model_id", json!(model_id), None);
             _ = tele.send_message(chat_id, &format!("The model has been set to {}", model_id));
 
-        } else if text.eq_ignore_ascii_case("/counterfeit-v20") {
-            let model_id = text.strip_prefix("/").unwrap();
+        } else if text.eq_ignore_ascii_case("/counterfeit_v20") {
+            let model_id = "counterfeit-v20";
             set("model_id", json!(model_id), None);
             _ = tele.send_message(chat_id, &format!("The model has been set to {}", model_id));
 
         } else if text.eq_ignore_ascii_case("/deliberate") {
-            let model_id = text.strip_prefix("/").unwrap();
+            let model_id = "deliberate";
             set("model_id", json!(model_id), None);
             _ = tele.send_message(chat_id, &format!("The model has been set to {}", model_id));
 
@@ -125,7 +125,10 @@ async fn handler(tele: Telegram, api_key: &str, placeholder_text: &str, help_mes
             let mut bytes = Vec::new();
             let mut req = Request::new(&api_uri);
             req.method(Method::POST)
+                .header("User-Agent", "flows/1")
+                .header("Accept", "*/*")
                 .header("Content-Type", "application/json")
+                .header("Content-Length", &json_request.as_bytes().len())
                 .body(json_request.as_bytes());
             log::info!("api request : {:?}", req);
             let resp = req.send(&mut bytes).unwrap();
