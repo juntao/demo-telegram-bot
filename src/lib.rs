@@ -38,7 +38,7 @@ async fn handler(tele: Telegram, api_key: &str, placeholder_text: &str, help_mes
 
         } else if text.starts_with("/") {
             let command = text.trim().strip_prefix("/").unwrap();
-            let model_id = command.replace("_", "-").as_str();
+            let model_id = &command.replace("_", "-");
             set("model_id", json!(model_id), None);
             _ = tele.send_message(chat_id, &format!("The model has been set to {}", model_id));
 
