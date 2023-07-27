@@ -17,7 +17,7 @@ pub async fn run() -> anyhow::Result<()> {
     let telegram_token = std::env::var("telegram_token").unwrap();
     let api_key = std::env::var("miaoshouai_key").unwrap();
     let placeholder_text = std::env::var("placeholder").unwrap_or("Generating your image ...".to_string());
-    let help_mesg = std::env::var("help_mesg").unwrap_or("Type command `/model_id` to select a model. Available choices are: /redshift-diffusion, /samdoesarts-ultmerge,  /midjourney-v4, /inkpunk".to_string());
+    let help_mesg = std::env::var("help_mesg").unwrap_or("Type command `/model_id` to select a model. Available choices are: /redshift-diffusion /samdoesarts-ultmerge /midjourney-v4 /inkpunk /counterfeit-v20".to_string());
 
     listen_to_update(&telegram_token, |update| {
         let tele = Telegram::new(telegram_token.to_string());
@@ -90,6 +90,10 @@ async fn handler(tele: Telegram, api_key: &str, placeholder_text: &str, help_mes
             let model_id = text.strip_prefix("/").unwrap();
             set("model_id", json!(model_id), None);
             _ = tele.send_message(chat_id, &format!("The model has been set to {}", model_id));
+
+        } else if text.starts_with("/") {
+            _ = tele.send_message(chat_id, "Sorry, I do not recognize the model name.");
+            _ = tele.send_message(chat_id, help_mesg);
 
         } else {
             let placeholder = tele
