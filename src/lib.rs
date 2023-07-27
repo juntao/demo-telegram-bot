@@ -120,6 +120,7 @@ async fn handler(tele: Telegram, api_key: &str, placeholder_text: &str, help_mes
             }
 
             let json_request = format!(include_str!("request_template.json"), api_key, model_id, positive_prompt.trim(), negative_prompt.trim());
+            log::info!("api request : {}", json_request);
             let api_uri: Uri = Uri::try_from("https://miaoshouai.com/playground/translation/produce/do/text2img").unwrap();
             let mut bytes = Vec::new();
             Request::new(&api_uri)
@@ -136,6 +137,7 @@ async fn handler(tele: Telegram, api_key: &str, placeholder_text: &str, help_mes
             let c: Value = serde_json::from_str(&json_response).unwrap();
             let fetch_key = c["data"]["fetchKey"].as_str().unwrap();
             let fetch_url = format!("https://miaoshouai.com/playground/translation/produce/get/fetchResult?fetchKey={}", fetch_key);
+            log::info!("fetch request : {}", fetch_url);
             let fetch_uri: Uri = Uri::try_from(fetch_url.as_str()).unwrap();
             let mut bytes = Vec::new();
             Request::new(&fetch_uri)
@@ -144,9 +146,9 @@ async fn handler(tele: Telegram, api_key: &str, placeholder_text: &str, help_mes
             let json_response = String::from_utf8(bytes).unwrap();
             log::info!("Received from fetch service : {}", json_response);
 
-
             let c: Value = serde_json::from_str(&json_response).unwrap();
             let pic_url = c["data"]["picUrl"].as_str().unwrap();
+            log::info!("pic request : {}", pic_url);
             _ = tele.send_photo(chat_id, InputFile::url(Url::parse(pic_url).unwrap()));
             _ = tele.edit_message_text(chat_id, placeholder.id, "");
         }
