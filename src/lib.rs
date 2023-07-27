@@ -16,8 +16,8 @@ pub async fn run() -> anyhow::Result<()> {
     logger::init();
     let telegram_token = std::env::var("telegram_token").unwrap();
     let api_key = std::env::var("miaoshouai_key").unwrap();
-    let placeholder_text = std::env::var("placeholder").unwrap_or("Generating your image ...".to_string());
-    let help_mesg = std::env::var("help_mesg").unwrap_or("Select a model. Available choices are:\n/redshift_diffusion\n/samdoesarts_ultmerge\n/midjourney_v4\n/inkpunk\n/counterfeit_v20".to_string());
+    let placeholder_text = std::env::var("placeholder").unwrap_or("Generating your image ... This could take a minute!".to_string());
+    let help_mesg = std::env::var("help_mesg").unwrap_or("Select a model. Available choices are:\n/redshift_diffusion\n/samdoesarts_ultmerge\n/midjourney_v4\n/inkpunk\n/synthwave_diffusion\n/analog_diffusion\n/dreamlike_diffusion_\n/gta5_artwork_diffusi\n/elldreths_vi\n/dreamlike\n/dream_shaper_8797\n/counterfeit_v20\n/deliberate\n/pixel_sprite\n/all_in_one_pixel_mod\n/midjourney_papercut\n/graffitymidjourney\n/woolitize_diffusion\n/midjourney_v4_painta\n/exposure_diffusion\n/firewatch_diffusion\n/portraitplus_diffusion\n/vintedois_diffusion\n/pixel_art_v3\n/pastel_mix\n/t_shirt_prin\n/disco_diffusion\n/protogen_infinity_of\n/anything_v5\n/icons_diffusion\n/stable_diffu_5089\n/lowpoly_diffusion\n/dosmix\n/meinamix\n/rev_anim\n/yae_miko_genshin\n/neverending_dream\n/guofeng3\n/meinapastel\n/disillusionmix".to_string());
 
     listen_to_update(&telegram_token, |update| {
         let tele = Telegram::new(telegram_token.to_string());
@@ -32,68 +32,14 @@ async fn handler(tele: Telegram, api_key: &str, placeholder_text: &str, help_mes
         let chat_id = msg.chat.id;
         log::info!("Received message from {}", chat_id);
 
-        let text = msg.text().unwrap_or("");
+        let text = msg.text().unwrap_or("/help");
         if text.eq_ignore_ascii_case("/help") || text.eq_ignore_ascii_case("/start") {
             _ = tele.send_message(chat_id, help_mesg);
 
-        } else if text.eq_ignore_ascii_case("/redshift_diffusion") {
-            let model_id = "redshift-diffusion";
-            set("model_id", json!(model_id), None);
-            _ = tele.send_message(chat_id, &format!("The model has been set to {}", model_id));
-
-        } else if text.eq_ignore_ascii_case("/samdoesarts_ultmerge") {
-            let model_id = "samdoesarts-ultmerge";
-            set("model_id", json!(model_id), None);
-            _ = tele.send_message(chat_id, &format!("The model has been set to {}", model_id));
-
-        } else if text.eq_ignore_ascii_case("/midjourney_v4") {
-            let model_id = "midjourney-v4";
-            set("model_id", json!(model_id), None);
-            _ = tele.send_message(chat_id, &format!("The model has been set to {}", model_id));
-
-        } else if text.eq_ignore_ascii_case("/inkpunk") {
-            let model_id = "inkpunk";
-            set("model_id", json!(model_id), None);
-            _ = tele.send_message(chat_id, &format!("The model has been set to {}", model_id));
-
-        } else if text.eq_ignore_ascii_case("/synthwave_diffusion") {
-            let model_id = "synthwave-diffusion";
-            set("model_id", json!(model_id), None);
-            _ = tele.send_message(chat_id, &format!("The model has been set to {}", model_id));
-
-        } else if text.eq_ignore_ascii_case("/analog_diffusion") {
-            let model_id = "analog-diffusion";
-            set("model_id", json!(model_id), None);
-            _ = tele.send_message(chat_id, &format!("The model has been set to {}", model_id));
-
-        } else if text.eq_ignore_ascii_case("/elldreths_vi") {
-            let model_id = "elldreths-vi";
-            set("model_id", json!(model_id), None);
-            _ = tele.send_message(chat_id, &format!("The model has been set to {}", model_id));
-
-        } else if text.eq_ignore_ascii_case("/dreamlike") {
-            let model_id = "dreamlike";
-            set("model_id", json!(model_id), None);
-            _ = tele.send_message(chat_id, &format!("The model has been set to {}", model_id));
-
-        } else if text.eq_ignore_ascii_case("/dream_shaper_8797") {
-            let model_id = "dream-shaper-8797";
-            set("model_id", json!(model_id), None);
-            _ = tele.send_message(chat_id, &format!("The model has been set to {}", model_id));
-
-        } else if text.eq_ignore_ascii_case("/counterfeit_v20") {
-            let model_id = "counterfeit-v20";
-            set("model_id", json!(model_id), None);
-            _ = tele.send_message(chat_id, &format!("The model has been set to {}", model_id));
-
-        } else if text.eq_ignore_ascii_case("/deliberate") {
-            let model_id = "deliberate";
-            set("model_id", json!(model_id), None);
-            _ = tele.send_message(chat_id, &format!("The model has been set to {}", model_id));
-
         } else if text.starts_with("/") {
-            _ = tele.send_message(chat_id, "Sorry, I do not recognize the model name.");
-            _ = tele.send_message(chat_id, help_mesg);
+            let model_id = text.trim().strip_prefix("/").unwrap().replace("_", "-").as_str();
+            set("model_id", json!(model_id), None);
+            _ = tele.send_message(chat_id, &format!("The model has been set to {}", model_id));
 
         } else {
             let placeholder = tele
@@ -162,7 +108,7 @@ async fn handler(tele: Telegram, api_key: &str, placeholder_text: &str, help_mes
                 if !pic_url.is_empty() {
                     log::info!("pic request : {}", pic_url);
                     _ = tele.send_photo(chat_id, InputFile::url(Url::parse(pic_url).unwrap()));
-                    _ = tele.edit_message_text(chat_id, placeholder.id, "");
+                    _ = tele.edit_message_text(chat_id, placeholder.id, "See the generated image below");
                     break;
                 }
             }
