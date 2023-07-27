@@ -1,0 +1,14 @@
+{{
+  "apiKey":"{}",
+  "batch_size":"1",
+  "height":512,
+  "width":512,
+  "model_id":"{}",
+  "prompt":"{}",
+  "negative_prompt":"{}",
+  "num_inference_steps":20,
+  "samplers":"EulerAncestralDiscreteScheduler",
+  "seed":0,
+  "enhance_prompt":"no",
+  "cfg_scale":7.5
+}}
