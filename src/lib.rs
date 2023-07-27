@@ -17,7 +17,7 @@ pub async fn run() -> anyhow::Result<()> {
     let telegram_token = std::env::var("telegram_token").unwrap();
     let api_key = std::env::var("miaoshouai_key").unwrap();
     let placeholder_text = std::env::var("placeholder").unwrap_or("Generating your image ...".to_string());
-    let help_mesg = std::env::var("help_mesg").unwrap_or("Select a model. Available choices are:\n/redshift_diffusion\n/samdoesarts_ultmerge\n/midjourney_v4\n/inkpunk\n/counterfeit-v20".to_string());
+    let help_mesg = std::env::var("help_mesg").unwrap_or("Select a model. Available choices are:\n/redshift_diffusion\n/samdoesarts_ultmerge\n/midjourney_v4\n/inkpunk\n/counterfeit_v20".to_string());
 
     listen_to_update(&telegram_token, |update| {
         let tele = Telegram::new(telegram_token.to_string());
@@ -136,28 +136,37 @@ async fn handler(tele: Telegram, api_key: &str, placeholder_text: &str, help_mes
             let json_response = String::from_utf8(bytes).unwrap();
             log::info!("Received from api service : {}", json_response);
 
-            // wait for 20 sec just to be safe!
-            sleep(Duration::from_millis(20000)).await;
-            
             let c: Value = serde_json::from_str(&json_response).unwrap();
             let fetch_key = c["data"]["fetchKey"].as_str().unwrap();
             let fetch_url = format!("https://miaoshouai.com/playground/translation/produce/get/fetchResult?fetchKey={}", fetch_key);
             log::info!("fetch request : {}", fetch_url);
             let fetch_uri: Uri = Uri::try_from(fetch_url.as_str()).unwrap();
-            let mut bytes = Vec::new();
-            Request::new(&fetch_uri)
-                .method(Method::GET)
-                .send(&mut bytes).unwrap();
-            let json_response = String::from_utf8(bytes).unwrap();
-            log::info!("Received from fetch service : {}", json_response);
+            
+            // Wait for a max of 120s
+            for _ in 0..11 {
+                // Wait for 10 sec
+                sleep(Duration::from_millis(10000)).await;
+                
+                let mut bytes = Vec::new();
+                Request::new(&fetch_uri)
+                    .method(Method::GET)
+                    .send(&mut bytes).unwrap();
+                let json_response = String::from_utf8(bytes).unwrap();
+                log::info!("Received from fetch service : {}", json_response);
 
-            let c: Value = serde_json::from_str(&json_response).unwrap();
-            let pic_url = c["data"]["picUrl"].as_str().unwrap();
-            log::info!("pic request : {}", pic_url);
-            _ = tele.send_photo(chat_id, InputFile::url(Url::parse(pic_url).unwrap()));
-            _ = tele.edit_message_text(chat_id, placeholder.id, "");
+                let c: Value = serde_json::from_str(&json_response).unwrap();
+                let pic_url = match c["data"]["picUrl"].as_str() {
+                    Some(v) => v,
+                    None => "",
+                }
+                if !pic_url.is_empty() {
+                    log::info!("pic request : {}", pic_url);
+                    _ = tele.send_photo(chat_id, InputFile::url(Url::parse(pic_url).unwrap()));
+                    _ = tele.edit_message_text(chat_id, placeholder.id, "");
+                    break;
+                }
+            }
         }
-
         return;
     }
 }
