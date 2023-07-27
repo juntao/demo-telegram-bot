@@ -70,16 +70,14 @@ async fn handler(tele: Telegram, api_key: &str, placeholder_text: &str, help_mes
             log::info!("api request : {}", json_request);
             let api_uri: Uri = Uri::try_from("https://miaoshouai.com/playground/translation/produce/do/text2img").unwrap();
             let mut bytes = Vec::new();
-            let mut req = Request::new(&api_uri);
-            req.method(Method::POST)
+            Request::new(&api_uri)
+                .method(Method::POST)
                 .header("User-Agent", "flows/1")
                 .header("Accept", "*/*")
                 .header("Content-Type", "application/json")
                 .header("Content-Length", &json_request.as_bytes().len())
                 .body(json_request.as_bytes());
-            log::info!("api request : {:?}", req);
-            let resp = req.send(&mut bytes).unwrap();
-            log::info!("api response : {:?}", resp);
+                .send(&mut bytes).unwrap();
             let json_response = String::from_utf8(bytes).unwrap();
             log::info!("Received from api service : {}", json_response);
 
