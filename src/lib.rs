@@ -115,7 +115,7 @@ async fn handler(tele: Telegram, api_key: &str, placeholder_text: &str, help_mes
                 }
             }
 
-            let json_request = format!(include_str!("request_template.json"), api_key, model_id, positive_prompt, negative_prompt);
+            let json_request = format!(include_str!("request_template.json"), api_key, model_id, positive_prompt.trim(), negative_prompt.trim());
             let api_uri: Uri = Uri::try_from("https://miaoshouai.com/playground/translation/produce/do/text2img").unwrap();
             let mut bytes = Vec::new();
             Request::new(&api_uri)
