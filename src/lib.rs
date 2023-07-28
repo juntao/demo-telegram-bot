@@ -82,7 +82,13 @@ async fn handler(tele: Telegram, api_key: &str, placeholder_text: &str, help_mes
             log::info!("Received from api service : {}", json_response);
 
             let c: Value = serde_json::from_str(&json_response).unwrap();
-            let fetch_key = c["data"]["fetchKey"].as_str().unwrap();
+            let fetch_key = match c["data"]["fetchKey"].as_str() {
+                Some(v) => v,
+                None => {
+                    _ = tele.edit_message_text(chat_id, placeholder.id, "Sorry this prompt is not allowed by our policy. Please try another one!");
+                    return;
+                },
+            };
             let fetch_url = format!("https://miaoshouai.com/playground/translation/produce/get/fetchResult?fetchKey={}", fetch_key);
             log::info!("fetch request : {}", fetch_url);
             let fetch_uri: Uri = Uri::try_from(fetch_url.as_str()).unwrap();
